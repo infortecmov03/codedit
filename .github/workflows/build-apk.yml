@@ -1,74 +1,65 @@
-name: Build Android APK
+name: Build Installable Android APK
 
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
-
-permissions:
-  contents: write
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Java 17
+    - uses: actions/checkout@v4
+
+    - name: Setup environment
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
         java-version: '17'
         
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-      with:
-        packages: |
-          platforms;android-33
-          build-tools;34.0.0
-          cmdline-tools;latest
-          platform-tools
-        accept-android-sdk-licenses: true
-        
-    - name: Install Node.js
-      uses: actions/setup-node@v4
+    - uses: actions/setup-node@v4
       with:
         node-version: '18'
-        
-    - name: Install Capacitor
+
+    - name: Create package.json and prepare web
       run: |
-        npm install -g @capacitor/cli @capacitor/core @capacitor/android
-        
-    - name: Create package.json
-      run: |
+        # Criar package.json mínimo para Capacitor
         cat > package.json << 'EOF'
         {
           "name": "codemobile",
           "version": "2.0.0",
-          "type": "module",
           "scripts": {
-            "cap:init": "npx cap init CodeMobile com.codemobile.editor --web-dir .",
-            "cap:add": "npx cap add android",
-            "build:apk": "cd android && ./gradlew assembleDebug"
+            "prepare-web": "mkdir -p www && cp index.html www/ || echo 'Using existing web files'"
           },
           "dependencies": {
             "@capacitor/android": "^5.0.0",
-            "@capacitor/core": "^5.0.0"
+            "@capacitor/core": "^5.0.0",
+            "@capacitor/cli": "^5.0.0"
           }
         }
         EOF
         
-    - name: Initialize Capacitor
-      run: |
-        npx cap init CodeMobile com.codemobile.editor --web-dir .
-        npx cap add android
+        # Instalar dependências
+        npm ci
         
-    - name: Configure Android Project
+        # Preparar arquivos web
+        npm run prepare-web
+
+    - name: Initialize Capacitor and Android
       run: |
-        # Criar AndroidManifest.xml
+        # Inicializar Capacitor se não existir
+        if [ ! -d "android" ]; then
+          npx cap init com.codemobile.editor CodeMobile --web-dir=www
+          npx cap add android
+        fi
+        
+        # Sincronizar com Android
+        npx cap sync android
+
+    - name: Configure Android permissions
+      run: |
+        # Garantir permissões no AndroidManifest
         mkdir -p android/app/src/main
         cat > android/app/src/main/AndroidManifest.xml << 'EOF'
         <?xml version="1.0" encoding="utf-8"?>
@@ -79,8 +70,7 @@ jobs:
                 android:allowBackup="true"
                 android:icon="@mipmap/ic_launcher"
                 android:label="CodeMobile"
-                android:theme="@style/AppTheme"
-                android:usesCleartextTraffic="true">
+                android:theme="@style/AppTheme">
                 
                 <activity
                     android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
@@ -98,66 +88,29 @@ jobs:
                 </activity>
             </application>
             
+            <!-- Permissões para sistema de arquivos -->
             <uses-permission android:name="android.permission.INTERNET" />
             <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
             
         </manifest>
         EOF
-        
-        # Criar build.gradle correto
-        cat > android/app/build.gradle << 'EOF'
-        apply plugin: 'com.android.application'
 
-        android {
-            compileSdkVersion 33
-            namespace "com.codemobile.editor"
-            
-            defaultConfig {
-                applicationId "com.codemobile.editor"
-                minSdkVersion 22
-                targetSdkVersion 33
-                versionCode 1
-                versionName "2.0.0"
-            }
-            
-            buildTypes {
-                release {
-                    minifyEnabled false
-                    proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-                }
-                debug {
-                    debuggable true
-                }
-            }
-            
-            compileOptions {
-                sourceCompatibility JavaVersion.VERSION_17
-                targetCompatibility JavaVersion.VERSION_17
-            }
-        }
-        
-        dependencies {
-            implementation fileTree(include: ['*.jar'], dir: 'libs')
-            implementation project(':capacitor-android')
-        }
-        EOF
-        
-    - name: Build APK
+    - name: Build Debug APK (Installable)
       run: |
         cd android
         chmod +x gradlew
-        ./gradlew assembleDebug --no-daemon
-        
-    - name: Upload APK artifact
+        ./gradlew assembleDebug
+
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: CodeMobile-APK
+        name: codemobile-app-debug
         path: android/app/build/outputs/apk/debug/app-debug.apk
-        retention-days: 30
-        
-    - name: Create Release
-      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
+    - name: Create GitHub Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -166,13 +119,26 @@ jobs:
         tag_name: v2.0.${{ github.run_number }}
         name: CodeMobile v2.0.${{ github.run_number }}
         body: |
-          🚀 CodeMobile - Editor de Código Mobile
+          📱 **CodeMobile - Editor de Código para Android**
           
-          **Build:** #${{ github.run_number }}
-          **Data:** ${{ github.event.head_commit.timestamp }}
+          ### 📦 Sobre este APK:
+          - **Versão:** 2.0.${{ github.run_number }}
+          - **Data:** ${{ github.event.head_commit.timestamp }}
+          - **Tipo:** Debug (Instalável)
+          
+          ### 🚀 Funcionalidades:
+          - ✏️ Editor multi-linguagem (HTML, CSS, JS, Python, PHP, SQL, JSON, Markdown)
+          - 👁️ Preview em tempo real
+          - 📁 Sistema de arquivos local
+          - 🐙 Integração GitHub
+          - 📋 Biblioteca de snippets
+          - 🌙 Tema claro/escuro
           
           ### 📥 Instalação:
           1. Baixe o APK abaixo
-          2. Permita "Fontes desconhecidas" no Android
-          3. Instale e aproveite!
+          2. No Android, permita "Fontes desconhecidas"
+          3. Instale e comece a codificar!
+          
+          ⚠️ **Nota:** Este é um APK de desenvolvimento para testes.
         draft: false
+        prerelease: false
