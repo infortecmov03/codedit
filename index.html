@@ -1329,6 +1329,282 @@ body.light-theme .style .token.string {
     border-radius: 3px;
     cursor: pointer;
 }
+
+/* ===== SISTEMA DE SCROLL ORGANIZADO ===== */
+
+/* Scrollbars customizadas para toda a aplicação */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #2d2d30;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #464647;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #565657;
+}
+
+::-webkit-scrollbar-corner {
+    background: #2d2d30;
+}
+
+/* Para Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #464647 #2d2d30;
+}
+
+/* ===== SCROLL DA SIDEBAR ===== */
+.sidebar-content {
+    scrollbar-width: thin;
+    scrollbar-color: #464647 #252526;
+}
+
+.sidebar-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+    background: #252526;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: #3e3e42;
+    border-radius: 3px;
+}
+
+/* ===== SCROLL DO EDITOR ===== */
+.editor-wrapper {
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #464647 #1e1e1e;
+}
+
+.editor-wrapper::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.editor-wrapper::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+.editor-wrapper::-webkit-scrollbar-thumb {
+    background: #464647;
+    border: 2px solid #1e1e1e;
+    border-radius: 5px;
+}
+
+.editor-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #565657;
+}
+
+/* ===== SCROLL DO CONSOLE ===== */
+.console-area {
+    scrollbar-width: thin;
+    scrollbar-color: #464647 #1e1e1e;
+}
+
+.console-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.console-area::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+.console-area::-webkit-scrollbar-thumb {
+    background: #464647;
+    border-radius: 4px;
+}
+
+/* ===== SCROLL DAS ABAS ===== */
+.code-tabs {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.code-tabs::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+}
+
+/* ===== SCROLL PARA LISTAS DE ARQUIVOS ===== */
+.file-list, .folder-list {
+    max-height: 300px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.file-list::-webkit-scrollbar,
+.folder-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.file-list::-webkit-scrollbar-track,
+.folder-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.file-list::-webkit-scrollbar-thumb,
+.folder-list::-webkit-scrollbar-thumb {
+    background: #3e3e42;
+    border-radius: 3px;
+}
+
+/* ===== SCROLL PARA MODAIS ===== */
+.snippets-list, .snippets-container {
+    max-height: 400px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.snippets-list::-webkit-scrollbar,
+.snippets-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.snippets-list::-webkit-scrollbar-track,
+.snippets-container::-webkit-scrollbar-track {
+    background: #2d2d30;
+}
+
+.snippets-list::-webkit-scrollbar-thumb,
+.snippets-container::-webkit-scrollbar-thumb {
+    background: #464647;
+    border-radius: 3px;
+}
+
+/* ===== MELHORIAS DE PERFORMANCE DE SCROLL ===== */
+.sidebar-content,
+.editor-wrapper,
+.console-area,
+.file-list,
+.folder-list,
+.snippets-list {
+    -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
+    will-change: scroll-position;
+    backface-visibility: hidden;
+}
+
+/* ===== SCROLL SMOOTH ===== */
+html {
+    scroll-behavior: smooth;
+}
+
+/* ===== OTIMIZAÇÕES MOBILE PARA SCROLL ===== */
+@media (max-width: 768px) {
+    /* Scroll mais fino em mobile */
+    ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+    
+    .editor-wrapper::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    
+    /* Melhorar área de toque para scroll */
+    .sidebar-content,
+    .editor-wrapper,
+    .file-list {
+        padding-right: 4px; /* Espaço para o scroll */
+    }
+    
+    /* Prevenir scroll horizontal indesejado */
+    .container {
+        overflow-x: hidden;
+    }
+    
+    /* Scroll suave para elementos críticos */
+    .code-editor {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* ===== ESTADOS DE FOCO E SCROLL ===== */
+.code-editor:focus {
+    outline: none;
+}
+
+/* Highlight da linha atual no editor (opcional) */
+.code-editor:focus {
+    box-shadow: inset 0 0 0 1px #0e639c;
+}
+
+/* ===== ANIMAÇÕES DE SCROLL SUAVE ===== */
+.smooth-scroll {
+    scroll-behavior: smooth;
+}
+
+/* ===== CONTROLE DE OVERFLOW PARA LAYOUT ===== */
+body.sidebar-open {
+    overflow: hidden;
+}
+
+.preview-area.active {
+    overflow: hidden;
+}
+
+/* ===== SCROLL VIRTUAL PARA GRANDES ARQUIVOS ===== */
+/* (Implementação básica - pode ser expandida) */
+.editor-wrapper.virtual-scroll {
+    overflow: auto;
+    height: 100%;
+}
+
+.code-editor.large-file {
+    min-height: 5000px; /* Para arquivos muito grandes */
+}
+
+/* ===== INDICADORES DE SCROLL VISUAIS ===== */
+.scroll-indicator {
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 40px;
+    background: #0e639c;
+    opacity: 0.6;
+    border-radius: 2px;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* ===== MELHORIAS DE ACESSIBILIDADE PARA SCROLL ===== */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+    
+    .smooth-scroll {
+        scroll-behavior: auto;
+    }
+}
+
+/* Suporte para dark/light theme */
+body.light-theme ::-webkit-scrollbar-track {
+    background: #f0f0f0;
+}
+
+body.light-theme ::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+}
+
+body.light-theme ::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
 </style>
 </head>
 <body>
@@ -3340,6 +3616,169 @@ function toggleSidebar() {
     }
 
 
+    // ===== SISTEMA DE CONTROLE DE SCROLL =====
+
+function setupScrollSystem() {
+    initializeCustomScrollbars();
+    setupScrollSynchronization();
+    setupScrollOptimizations();
+    setupScrollIndicators();
+}
+
+function initializeCustomScrollbars() {
+    // Inicializar scrollbars customizadas se necessário
+    debugLog('📜 Sistema de scroll inicializado');
+}
+
+function setupScrollSynchronization() {
+    // Sincronizar scroll entre elementos relacionados se necessário
+    const editors = document.querySelectorAll('.code-editor');
+    
+    editors.forEach(editor => {
+        editor.addEventListener('scroll', debounce(function(e) {
+            // Aqui você pode sincronizar scroll entre editores se necessário
+            handleEditorScroll(e.target);
+        }, 50));
+    });
+}
+
+function handleEditorScroll(editor) {
+    // Implementar lógica de sincronização de scroll se necessário
+    const scrollTop = editor.scrollTop;
+    const scrollLeft = editor.scrollLeft;
+    
+    // Exemplo: sincronizar múltiplas visões do mesmo arquivo
+    debugLog(`Editor scroll: ${scrollTop}px, ${scrollLeft}px`, null, 'info');
+}
+
+function setupScrollOptimizations() {
+    // Otimizações de performance para scroll
+    const scrollElements = [
+        '.sidebar-content',
+        '.editor-wrapper', 
+        '.file-list',
+        '.folder-list',
+        '.console-area',
+        '.snippets-list'
+    ];
+    
+    scrollElements.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+            element.style.willChange = 'scroll-position';
+            element.style.backfaceVisibility = 'hidden';
+        });
+    });
+}
+
+function setupScrollIndicators() {
+    // Adicionar indicadores visuais de scroll se necessário
+    const createScrollIndicator = (element) => {
+        const indicator = document.createElement('div');
+        indicator.className = 'scroll-indicator';
+        element.style.position = 'relative';
+        element.appendChild(indicator);
+        
+        element.addEventListener('scroll', () => {
+            updateScrollIndicator(element, indicator);
+        });
+        
+        updateScrollIndicator(element, indicator);
+    };
+    
+    // Aplicar a elementos específicos
+    const editorWrapper = document.querySelector('.editor-wrapper');
+    if (editorWrapper) {
+        createScrollIndicator(editorWrapper);
+    }
+}
+
+function updateScrollIndicator(element, indicator) {
+    const scrollableHeight = element.scrollHeight - element.clientHeight;
+    const scrollProgress = (element.scrollTop / scrollableHeight) * 100;
+    
+    if (scrollableHeight > 0) {
+        const indicatorHeight = Math.max(20, (element.clientHeight / element.scrollHeight) * 100);
+        const indicatorPosition = (scrollProgress / 100) * (element.clientHeight - indicatorHeight);
+        
+        indicator.style.height = `${indicatorHeight}%`;
+        indicator.style.top = `${indicatorPosition}px`;
+        indicator.style.opacity = '0.6';
+    } else {
+        indicator.style.opacity = '0';
+    }
+}
+
+// Função para scroll suave para elementos
+function smoothScrollTo(element, position, duration = 300) {
+    const start = element.scrollTop;
+    const change = position - start;
+    const startTime = performance.now();
+    
+    function animateScroll(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function (easeInOutCubic)
+        const ease = progress < 0.5 
+            ? 4 * progress * progress * progress 
+            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+            
+        element.scrollTop = start + change * ease;
+        
+        if (progress < 1) {
+            requestAnimationFrame(animateScroll);
+        }
+    }
+    
+    requestAnimationFrame(animateScroll);
+}
+
+// Função para scroll para topo
+function scrollToTop(element) {
+    smoothScrollTo(element, 0);
+}
+
+// Função para scroll para fundo
+function scrollToBottom(element) {
+    smoothScrollTo(element, element.scrollHeight);
+}
+
+// Função para scroll para elemento específico no editor
+function scrollToLine(editor, lineNumber) {
+    const lineHeight = 20; // Ajuste conforme sua fonte
+    const targetPosition = (lineNumber - 1) * lineHeight;
+    smoothScrollTo(editor, targetPosition);
+}
+
+// Detectar fim do scroll (infinite scroll para arquivos grandes)
+function setupInfiniteScroll(callback) {
+    const editors = document.querySelectorAll('.code-editor');
+    
+    editors.forEach(editor => {
+        editor.addEventListener('scroll', debounce(function() {
+            const scrollBottom = editor.scrollTop + editor.clientHeight;
+            const threshold = editor.scrollHeight - 100; // 100px do fim
+            
+            if (scrollBottom >= threshold) {
+                callback(editor);
+            }
+        }, 100));
+    });
+}
+
+// Prevenir scroll indesejado em mobile
+function preventOverscroll() {
+    document.addEventListener('touchmove', function(e) {
+        // Prevenir overscroll no body
+        if (e.target === document.body || e.target === document.documentElement) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+}
+
+
+
     // ===== MELHORIAS DE ACESSIBILIDADE =====
 
 function setupAccessibility() {
@@ -4015,6 +4454,34 @@ function runEditorTests() {
         console.log('Features avançadas inicializadas');
     }
 
+    // ===== SCROLL OTIMIZADO PARA MOBILE =====
+
+function setupMobileScroll() {
+    if (window.innerWidth < 768) {
+        // Aumentar área de toque para scroll
+        const scrollableElements = document.querySelectorAll('.code-editor, .sidebar-content');
+        
+        scrollableElements.forEach(element => {
+            element.style.padding = '10px 8px 10px 10px';
+            element.style.webkitUserSelect = 'text';
+            element.style.userSelect = 'text';
+        });
+        
+        // Configurar scroll suave nativo
+        document.documentElement.style.scrollBehavior = 'smooth';
+        
+        // Prevenir zoom no scroll
+        document.addEventListener('touchmove', function(e) {
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        debugLog('📱 Scroll mobile otimizado');
+    }
+}
+
+
     function init() {
         setupEventListeners();
         setupMobileOptimizations();
@@ -4029,6 +4496,8 @@ function runEditorTests() {
         initializeLazyLoading();
         setupAccessibility();
         setupKeyboardNavigation();
+        setupScrollSystem();
+        setupMobileScroll();
 
         // Configurar monitoramento de conexão
         setupConnectionMonitoring();
