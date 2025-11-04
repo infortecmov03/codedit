@@ -27,11 +27,11 @@ jobs:
         # Criar package.json para Capacitor
         cat > package.json << 'EOF'
         {
-          "name": "codemobile",
+          "name": "codemobile-app",
           "version": "2.0.0",
           "type": "module",
           "scripts": {
-            "prepare-web": "mkdir -p www && cp index.html www/ || echo 'Using existing web files'"
+            "build": "echo 'Build completed'"
           },
           "dependencies": {
             "@capacitor/android": "^5.5.0",
@@ -51,20 +51,25 @@ jobs:
         cp index.html www/
         echo "✅ Web files prepared successfully"
 
-    - name: Initialize Capacitor and Android
+    - name: Initialize Capacitor with explicit parameters
       run: |
-        # Verificar se os arquivos web existem
-        ls -la www/
+        # Inicializar Capacitor com todos os parâmetros explícitos
+        npx @capacitor/cli init \
+          --app-id "com.codemobile.editor" \
+          --app-name "CodeMobile" \
+          --web-dir "www"
         
-        # Inicializar Capacitor com parâmetros CORRETOS
-        # Formato: npx cap init [appId] [appName] [webDir]
-        npx cap init com.codemobile.editor "codemobile" www
-        
-        # Adicionar plataforma Android
+        echo "✅ Capacitor initialized successfully"
+
+    - name: Add Android platform
+      run: |
         npx cap add android
-        
-        # Sincronizar com Android
+        echo "✅ Android platform added"
+
+    - name: Sync with Android
+      run: |
         npx cap sync android
+        echo "✅ Android sync completed"
 
     - name: Build Debug APK
       run: |
@@ -101,11 +106,11 @@ jobs:
           - **Tipo:** APK Debug (Instalável)
           
           ### 🚀 Funcionalidades:
-          - ✏️ Editor multi-linguagem (HTML, CSS, JS, Python, PHP, SQL, JSON, Markdown)
+          - ✏️ Editor multi-linguagem
           - 👁️ Preview em tempo real
-          - 📁 Sistema de arquivos local
+          - 📁 Sistema de arquivos
           - 🐙 Integração GitHub
-          - 📋 Biblioteca de snippets
+          - 📋 Snippets de código
           - 🌙 Tema claro/escuro
           
           ### 📥 Instalação:
