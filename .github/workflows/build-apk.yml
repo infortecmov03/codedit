@@ -58,7 +58,7 @@ jobs:
         
         # Inicializar Capacitor com parâmetros CORRETOS
         # Formato: npx cap init [appId] [appName] [webDir]
-        npx cap init com.codemobile.editor "CodeMobile" www
+        npx cap init com.codemobile.editor "codemobile" www
         
         # Adicionar plataforma Android
         npx cap add android
