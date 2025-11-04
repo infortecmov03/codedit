@@ -51,10 +51,9 @@ jobs:
         cp index.html www/
         echo "✅ Web files prepared successfully"
 
-    - name: Initialize Capacitor (CORRECT SYNTAX)
+    - name: Initialize Capacitor
       run: |
         # Sintaxe CORRETA do cap init:
-        # npx cap init [appName] [appId] [webDir]
         npx cap init "CodeMobile" "com.codemobile.editor" "www"
         
         echo "✅ Capacitor initialized successfully"
@@ -86,25 +85,8 @@ jobs:
         path: android/app/build/outputs/apk/debug/app-debug.apk
         retention-days: 30
 
-    - name: Create GitHub Release
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        files: android/app/build/outputs/apk/debug/app-debug.apk
-        tag_name: v2.0.${{ github.run_number }}
-        name: CodeMobile v2.0.${{ github.run_number }}
-        body: |
-          📱 **CodeMobile - Editor de Código para Android**
-          
-          ### 📦 Sobre este APK:
-          - **Versão:** 2.0.${{ github.run_number }}
-          - **Build:** #${{ github.run_number }}
-          - **Tipo:** APK Debug (Instalável)
-          
-          ### 📥 Instalação:
-          1. Baixe o APK abaixo
-          2. No Android, permita "Fontes desconhecidas"
-          3. Instale e comece a codificar!
-        draft: false
+    - name: Display success message
+      run: |
+        echo "🎉 APK built successfully!"
+        echo "📥 Download the APK from the Artifacts section above"
+        echo "🔧 To install: Allow 'Unknown sources' in Android settings"
