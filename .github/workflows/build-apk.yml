@@ -22,45 +22,52 @@ jobs:
       with:
         node-version: '18'
 
-    - name: Create package.json and prepare web
+    - name: Create package.json and install dependencies
       run: |
-        # Criar package.json mínimo para Capacitor
+        # Criar package.json para Capacitor
         cat > package.json << 'EOF'
         {
           "name": "codemobile",
           "version": "2.0.0",
+          "type": "module",
           "scripts": {
             "prepare-web": "mkdir -p www && cp index.html www/ || echo 'Using existing web files'"
           },
           "dependencies": {
-            "@capacitor/android": "^5.0.0",
-            "@capacitor/core": "^5.0.0",
-            "@capacitor/cli": "^5.0.0"
+            "@capacitor/android": "^5.5.0",
+            "@capacitor/core": "^5.5.0",
+            "@capacitor/cli": "^5.5.0"
           }
         }
         EOF
         
-        # Instalar dependências
-        npm ci
-        
-        # Preparar arquivos web
-        npm run prepare-web
+        # Usar npm install em vez de npm ci
+        npm install
+
+    - name: Prepare web files
+      run: |
+        # Criar diretório www e copiar index.html
+        mkdir -p www
+        cp index.html www/
+        echo "✅ Web files prepared successfully"
 
     - name: Initialize Capacitor and Android
       run: |
-        # Inicializar Capacitor se não existir
-        if [ ! -d "android" ]; then
-          npx cap init com.codemobile.editor CodeMobile --web-dir=www
-          npx cap add android
-        fi
+        # Verificar se os arquivos web existem
+        ls -la www/
+        
+        # Inicializar Capacitor
+        npx cap init com.codemobile.editor CodeMobile --web-dir=www
+        
+        # Adicionar plataforma Android
+        npx cap add android
         
         # Sincronizar com Android
         npx cap sync android
 
     - name: Configure Android permissions
       run: |
-        # Garantir permissões no AndroidManifest
-        mkdir -p android/app/src/main
+        # Garantir que o AndroidManifest tenha as permissões necessárias
         cat > android/app/src/main/AndroidManifest.xml << 'EOF'
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -88,26 +95,31 @@ jobs:
                 </activity>
             </application>
             
-            <!-- Permissões para sistema de arquivos -->
+            <!-- Permissões para o app -->
             <uses-permission android:name="android.permission.INTERNET" />
             <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-            <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
             
         </manifest>
         EOF
+        
+        echo "✅ Android permissions configured"
 
-    - name: Build Debug APK (Installable)
+    - name: Build Debug APK
       run: |
         cd android
         chmod +x gradlew
-        ./gradlew assembleDebug
+        ./gradlew assembleDebug --no-daemon
+        
+        # Verificar se o APK foi criado
+        ls -la app/build/outputs/apk/debug/
 
-    - name: Upload APK
+    - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: codemobile-app-debug
         path: android/app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 30
 
     - name: Create GitHub Release
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -123,22 +135,19 @@ jobs:
           
           ### 📦 Sobre este APK:
           - **Versão:** 2.0.${{ github.run_number }}
-          - **Data:** ${{ github.event.head_commit.timestamp }}
-          - **Tipo:** Debug (Instalável)
+          - **Build:** #${{ github.run_number }}
+          - **Tipo:** APK Debug (Instalável)
           
           ### 🚀 Funcionalidades:
-          - ✏️ Editor multi-linguagem (HTML, CSS, JS, Python, PHP, SQL, JSON, Markdown)
+          - ✏️ Editor multi-linguagem
           - 👁️ Preview em tempo real
-          - 📁 Sistema de arquivos local
+          - 📁 Sistema de arquivos
           - 🐙 Integração GitHub
-          - 📋 Biblioteca de snippets
+          - 📋 Snippets de código
           - 🌙 Tema claro/escuro
           
           ### 📥 Instalação:
           1. Baixe o APK abaixo
           2. No Android, permita "Fontes desconhecidas"
           3. Instale e comece a codificar!
-          
-          ⚠️ **Nota:** Este é um APK de desenvolvimento para testes.
         draft: false
-        prerelease: false
