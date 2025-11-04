@@ -41,7 +41,7 @@ jobs:
         }
         EOF
         
-        # Usar npm install em vez de npm ci
+        # Instalar dependências
         npm install
 
     - name: Prepare web files
@@ -56,8 +56,8 @@ jobs:
         # Verificar se os arquivos web existem
         ls -la www/
         
-        # Inicializar Capacitor
-        npx cap init com.codemobile.editor CodeMobile --web-dir=www
+        # Inicializar Capacitor com ID correto (sem maiúsculas)
+        npx cap init com.codemobile.editor codemobile --web-dir=www
         
         # Adicionar plataforma Android
         npx cap add android
@@ -113,6 +113,7 @@ jobs:
         
         # Verificar se o APK foi criado
         ls -la app/build/outputs/apk/debug/
+        echo "✅ APK built successfully"
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
