@@ -42,13 +42,18 @@ jobs:
       run: |
         npm install -g @capacitor/cli @capacitor/core @capacitor/android
         
-    - name: Create minimal package.json
+    - name: Create package.json
       run: |
         cat > package.json << 'EOF'
         {
           "name": "codemobile",
           "version": "2.0.0",
           "type": "module",
+          "scripts": {
+            "cap:init": "npx cap init CodeMobile com.codemobile.editor --web-dir .",
+            "cap:add": "npx cap add android",
+            "build:apk": "cd android && ./gradlew assembleDebug"
+          },
           "dependencies": {
             "@capacitor/android": "^5.0.0",
             "@capacitor/core": "^5.0.0"
@@ -100,17 +105,18 @@ jobs:
         </manifest>
         EOF
         
-        # Atualizar build.gradle para Java 17
+        # Criar build.gradle correto
         cat > android/app/build.gradle << 'EOF'
         apply plugin: 'com.android.application'
-        
+
         android {
-            compileSdk 33
+            compileSdkVersion 33
+            namespace "com.codemobile.editor"
             
             defaultConfig {
                 applicationId "com.codemobile.editor"
-                minSdk 22
-                targetSdk 33
+                minSdkVersion 22
+                targetSdkVersion 33
                 versionCode 1
                 versionName "2.0.0"
             }
@@ -119,6 +125,9 @@ jobs:
                 release {
                     minifyEnabled false
                     proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+                }
+                debug {
+                    debuggable true
                 }
             }
             
