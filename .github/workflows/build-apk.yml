@@ -56,54 +56,15 @@ jobs:
         # Verificar se os arquivos web existem
         ls -la www/
         
-        # Inicializar Capacitor com ID correto (sem maiúsculas)
-        npx cap init com.codemobile.editor codemobile --web-dir=www
+        # Inicializar Capacitor com parâmetros CORRETOS
+        # Formato: npx cap init [appId] [appName] [webDir]
+        npx cap init com.codemobile.editor "CodeMobile" www
         
         # Adicionar plataforma Android
         npx cap add android
         
         # Sincronizar com Android
         npx cap sync android
-
-    - name: Configure Android permissions
-      run: |
-        # Garantir que o AndroidManifest tenha as permissões necessárias
-        cat > android/app/src/main/AndroidManifest.xml << 'EOF'
-        <?xml version="1.0" encoding="utf-8"?>
-        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-            package="com.codemobile.editor">
-            
-            <application
-                android:allowBackup="true"
-                android:icon="@mipmap/ic_launcher"
-                android:label="CodeMobile"
-                android:theme="@style/AppTheme">
-                
-                <activity
-                    android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
-                    android:name="com.codemobile.editor.MainActivity"
-                    android:label="CodeMobile"
-                    android:theme="@style/AppTheme.NoActionBarLaunch"
-                    android:launchMode="singleTask"
-                    android:exported="true">
-                    
-                    <intent-filter>
-                        <action android:name="android.intent.action.MAIN" />
-                        <category android:name="android.intent.category.LAUNCHER" />
-                    </intent-filter>
-                    
-                </activity>
-            </application>
-            
-            <!-- Permissões para o app -->
-            <uses-permission android:name="android.permission.INTERNET" />
-            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-            
-        </manifest>
-        EOF
-        
-        echo "✅ Android permissions configured"
 
     - name: Build Debug APK
       run: |
@@ -140,11 +101,11 @@ jobs:
           - **Tipo:** APK Debug (Instalável)
           
           ### 🚀 Funcionalidades:
-          - ✏️ Editor multi-linguagem
+          - ✏️ Editor multi-linguagem (HTML, CSS, JS, Python, PHP, SQL, JSON, Markdown)
           - 👁️ Preview em tempo real
-          - 📁 Sistema de arquivos
+          - 📁 Sistema de arquivos local
           - 🐙 Integração GitHub
-          - 📋 Snippets de código
+          - 📋 Biblioteca de snippets
           - 🌙 Tema claro/escuro
           
           ### 📥 Instalação:
