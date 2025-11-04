@@ -51,13 +51,11 @@ jobs:
         cp index.html www/
         echo "✅ Web files prepared successfully"
 
-    - name: Initialize Capacitor with explicit parameters
+    - name: Initialize Capacitor (CORRECT SYNTAX)
       run: |
-        # Inicializar Capacitor com todos os parâmetros explícitos
-        npx @capacitor/cli init \
-          --app-id "com.codemobile.editor" \
-          --app-name "CodeMobile" \
-          --web-dir "www"
+        # Sintaxe CORRETA do cap init:
+        # npx cap init [appName] [appId] [webDir]
+        npx cap init "CodeMobile" "com.codemobile.editor" "www"
         
         echo "✅ Capacitor initialized successfully"
 
@@ -104,14 +102,6 @@ jobs:
           - **Versão:** 2.0.${{ github.run_number }}
           - **Build:** #${{ github.run_number }}
           - **Tipo:** APK Debug (Instalável)
-          
-          ### 🚀 Funcionalidades:
-          - ✏️ Editor multi-linguagem
-          - 👁️ Preview em tempo real
-          - 📁 Sistema de arquivos
-          - 🐙 Integração GitHub
-          - 📋 Snippets de código
-          - 🌙 Tema claro/escuro
           
           ### 📥 Instalação:
           1. Baixe o APK abaixo
