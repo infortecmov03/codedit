@@ -1,0 +1,103 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+      
+    - name: Build APK with Capacitor
+      run: |
+        # Instalar dependências
+        npm install -g @capacitor/cli @capacitor/core @capacitor/android
+        
+        # Criar estrutura do projeto Android
+        npx cap init CodeMobile com.codemobile.editor --web-dir .
+        
+        # Adicionar plataforma Android
+        npx cap add android
+        
+        # Configurar AndroidManifest.xml
+        echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+        <manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"
+            package=\"com.codemobile.editor\">
+            
+            <application
+                android:allowBackup=\"true\"
+                android:icon=\"@mipmap/ic_launcher\"
+                android:label=\"CodeMobile\"
+                android:theme=\"@style/AppTheme\"
+                android:usesCleartextTraffic=\"true\">
+                
+                <activity
+                    android:configChanges=\"orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode\"
+                    android:name=\"com.codemobile.editor.MainActivity\"
+                    android:label=\"CodeMobile\"
+                    android:theme=\"@style/AppTheme.NoActionBarLaunch\"
+                    android:launchMode=\"singleTask\"
+                    android:exported=\"true\">
+                    
+                    <intent-filter>
+                        <action android:name=\"android.intent.action.MAIN\" />
+                        <category android:name=\"android.intent.category.LAUNCHER\" />
+                    </intent-filter>
+                    
+                </activity>
+            </application>
+            
+            <uses-permission android:name=\"android.permission.INTERNET\" />
+            <uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\" />
+            <uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />
+            
+        </manifest>" > android/app/src/main/AndroidManifest.xml
+        
+        # Build do APK
+        cd android
+        ./gradlew assembleDebug
+        
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: CodeMobile-APK
+        path: android/app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 30
+        
+    - name: Create Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: android/app/build/outputs/apk/debug/app-debug.apk
+        tag_name: v2.0.0
+        name: CodeMobile v2.0.0
+        body: |
+          🚀 CodeMobile - Editor de Código Mobile
+          
+          ### Novas Funcionalidades:
+          - Editor multi-linguagem
+          - Preview em tempo real
+          - Integração GitHub
+          - Biblioteca de Snippets
+          
+          ### Download:
+          Baixe o APK abaixo e instale no seu Android!
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
