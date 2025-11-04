@@ -8,13 +8,17 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
     - name: Setup Java
       uses: actions/setup-java@v3
@@ -23,81 +27,115 @@ jobs:
         java-version: '11'
         
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v2
+      uses: android-actions/setup-android@v3
       
+    - name: Install Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
     - name: Build APK with Capacitor
       run: |
-        # Instalar dependências
+        # Instalar Capacitor globalmente
         npm install -g @capacitor/cli @capacitor/core @capacitor/android
         
-        # Criar estrutura do projeto Android
+        # Criar package.json mínimo se não existir
+        if [ ! -f package.json ]; then
+          echo '{
+            "name": "codemobile",
+            "version": "2.0.0",
+            "scripts": {
+              "cap:init": "npx cap init CodeMobile com.codemobile.editor",
+              "cap:add": "npx cap add android",
+              "build:apk": "cd android && ./gradlew assembleDebug"
+            }
+          }' > package.json
+        fi
+        
+        # Inicializar Capacitor
         npx cap init CodeMobile com.codemobile.editor --web-dir .
         
-        # Adicionar plataforma Android
+        # Adicionar Android
         npx cap add android
         
-        # Configurar AndroidManifest.xml
-        echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>
-        <manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"
-            package=\"com.codemobile.editor\">
+        # Configurar permissões no AndroidManifest
+        mkdir -p android/app/src/main
+        cat > android/app/src/main/AndroidManifest.xml << 'EOF'
+        <?xml version="1.0" encoding="utf-8"?>
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+            package="com.codemobile.editor">
             
             <application
-                android:allowBackup=\"true\"
-                android:icon=\"@mipmap/ic_launcher\"
-                android:label=\"CodeMobile\"
-                android:theme=\"@style/AppTheme\"
-                android:usesCleartextTraffic=\"true\">
+                android:allowBackup="true"
+                android:icon="@mipmap/ic_launcher"
+                android:label="CodeMobile"
+                android:theme="@style/AppTheme"
+                android:usesCleartextTraffic="true">
                 
                 <activity
-                    android:configChanges=\"orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode\"
-                    android:name=\"com.codemobile.editor.MainActivity\"
-                    android:label=\"CodeMobile\"
-                    android:theme=\"@style/AppTheme.NoActionBarLaunch\"
-                    android:launchMode=\"singleTask\"
-                    android:exported=\"true\">
+                    android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+                    android:name="com.codemobile.editor.MainActivity"
+                    android:label="CodeMobile"
+                    android:theme="@style/AppTheme.NoActionBarLaunch"
+                    android:launchMode="singleTask"
+                    android:exported="true">
                     
                     <intent-filter>
-                        <action android:name=\"android.intent.action.MAIN\" />
-                        <category android:name=\"android.intent.category.LAUNCHER\" />
+                        <action android:name="android.intent.action.MAIN" />
+                        <category android:name="android.intent.category.LAUNCHER" />
                     </intent-filter>
                     
                 </activity>
             </application>
             
-            <uses-permission android:name=\"android.permission.INTERNET\" />
-            <uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\" />
-            <uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
             
-        </manifest>" > android/app/src/main/AndroidManifest.xml
+        </manifest>
+        EOF
         
         # Build do APK
         cd android
-        ./gradlew assembleDebug
+        chmod +x gradlew
+        ./gradlew assembleDebug --no-daemon
         
     - name: Upload APK artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: CodeMobile-APK
         path: android/app/build/outputs/apk/debug/app-debug.apk
         retention-days: 30
         
     - name: Create Release
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
       uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         files: android/app/build/outputs/apk/debug/app-debug.apk
-        tag_name: v2.0.0
-        name: CodeMobile v2.0.0
+        tag_name: v2.0.${{ github.run_number }}
+        name: CodeMobile v2.0.${{ github.run_number }}
         body: |
           🚀 CodeMobile - Editor de Código Mobile
           
-          ### Novas Funcionalidades:
-          - Editor multi-linguagem
-          - Preview em tempo real
-          - Integração GitHub
-          - Biblioteca de Snippets
+          ### 📱 APK Gerado Automaticamente
+          **Build:** #${{ github.run_number }}
+          **Data:** ${{ github.event.head_commit.timestamp }}
           
-          ### Download:
-          Baixe o APK abaixo e instale no seu Android!
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ### ✨ Funcionalidades:
+          - 📝 8 Linguagens de programação
+          - 👁️ Preview em tempo real  
+          - 📁 Sistema de arquivos
+          - 🐙 Integração GitHub
+          - 📋 Snippets de código
+          - 🌙 Tema claro/escuro
+          
+          ### 📥 Instalação:
+          1. Baixe o APK abaixo
+          2. Permita "Fontes desconhecidas" no Android
+          3. Instale e aproveite!
+          
+          ⚠️ **Nota:** Este é um APK de debug para testes.
+        draft: false
+        prerelease: false
